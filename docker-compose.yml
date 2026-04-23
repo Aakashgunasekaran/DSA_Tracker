@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  dsa-tracker:
+    build: .
+    container_name: dsa-tracker
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persist the SQLite database outside the container
+      - dsa_data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+
+volumes:
+  dsa_data:
+    driver: local

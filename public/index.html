@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Master Problem Sheet</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --color-text-primary:#1a1a1a;--color-text-secondary:#555;--color-text-tertiary:#888;
+  --color-background-primary:#fff;--color-background-secondary:#f7f7f7;
+  --color-border-tertiary:#e4e4e4;--color-border-secondary:#d0d0d0;
+  --border-radius-sm:4px;--border-radius-md:6px;--border-radius-lg:8px;
+  --font-mono:ui-monospace,monospace;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#1a1a1a;max-width:900px;margin:0 auto;padding:0 16px 60px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.hdr{padding:1.5rem 0 1rem;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.hdr-left{}
+.title{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.subtitle{font-size:14px;color:var(--color-text-secondary);margin-top:4px}
+.sync-status{font-size:11px;padding:4px 10px;border-radius:99px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-tertiary);white-space:nowrap;margin-top:6px;cursor:default;user-select:none}
+.sync-status.syncing{color:#185FA5;border-color:#a8cdf0;background:#EBF4FF}
+.sync-status.saved{color:#3B6D11;border-color:#b5d98a;background:#EAF3DE}
+.sync-status.error{color:#A32D2D;border-color:#f0a8a8;background:#FCEBEB}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:1rem 0}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.stat-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.stat-val{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.progress-bar{height:6px;background:var(--color-border-tertiary);border-radius:3px;margin:6px 0 0;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:#639922;transition:width 0.4s}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin:1rem 0;align-items:center}
+.controls select,.controls input{font-size:13px;padding:6px 10px;height:32px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:#fff;color:#1a1a1a}
+.controls input{flex:1;min-width:150px}
+.filter-btn{font-size:12px;padding:5px 11px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);cursor:pointer;color:var(--color-text-secondary)}
+.filter-btn:hover{background:var(--color-background-secondary)}
+.filter-btn.on{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500}
+.reset-btn{font-size:12px;padding:5px 11px;border:0.5px solid #f0a8a8;border-radius:var(--border-radius-md);background:#fff;cursor:pointer;color:#A32D2D;margin-left:auto}
+.reset-btn:hover{background:#FCEBEB}
+.phase{margin:1.5rem 0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.phase-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--color-background-secondary);cursor:pointer}
+.phase-title{font-size:15px;font-weight:500;color:var(--color-text-primary);display:flex;align-items:center;gap:10px}
+.phase-badge{font-size:11px;padding:2px 9px;border-radius:99px;font-weight:500}
+.b1{background:#EAF3DE;color:#3B6D11}.b2{background:#E6F1FB;color:#185FA5}
+.b3{background:#FAEEDA;color:#854F0B}.b4{background:#FAECE7;color:#993C1D}
+.phase-meta{display:flex;align-items:center;gap:12px}
+.phase-prog{font-size:12px;color:var(--color-text-tertiary)}
+.pbar{height:3px;background:var(--color-border-tertiary)}
+.pbar-fill{height:100%;transition:width 0.4s}
+.f1{background:#639922}.f2{background:#378ADD}.f3{background:#BA7517}.f4{background:#D85A30}
+.topic{border-top:0.5px solid var(--color-border-tertiary)}
+.topic-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:var(--color-background-secondary);border-top:0.5px solid var(--color-border-tertiary);cursor:pointer}
+.topic-name{font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.04em}
+.topic-cnt{font-size:12px;color:var(--color-text-tertiary)}
+.prob-row{display:flex;align-items:center;gap:10px;padding:9px 16px 9px 20px;border-top:0.5px solid var(--color-border-tertiary);transition:background 0.15s}
+.prob-row:hover{background:var(--color-background-secondary)}
+.prob-row.done{opacity:0.45}
+.prob-row input[type=checkbox]{width:14px;height:14px;cursor:pointer;flex-shrink:0;accent-color:#639922}
+.prob-num{font-size:12px;color:var(--color-text-tertiary);min-width:38px;font-family:var(--font-mono)}
+.prob-name{font-size:13px;color:var(--color-text-primary);flex:1;text-decoration:none}
+.prob-name:hover{color:#185FA5;text-decoration:underline}
+.diff{font-size:11px;padding:2px 7px;border-radius:99px;font-weight:500;flex-shrink:0}
+.easy{background:#EAF3DE;color:#3B6D11}
+.medium{background:#FAEEDA;color:#854F0B}
+.hard{background:#FCEBEB;color:#A32D2D}
+.tags{display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
+.tag{font-size:10px;padding:1px 6px;border-radius:99px;background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
+.no-res{padding:2rem;text-align:center;font-size:13px;color:var(--color-text-tertiary)}
+.hidden{display:none}
+.toggle-btn{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--color-text-tertiary);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:var(--border-radius-sm);transition:background 0.15s,color 0.15s;flex-shrink:0}
+.toggle-btn:hover{background:var(--color-border-tertiary);color:var(--color-text-secondary)}
+.toggle-btn .chevron{display:inline-block;transition:transform 0.2s;font-style:normal}
+.phase.collapsed>.topic,.phase.collapsed .pbar{display:none}
+.topic.collapsed .prob-row{display:none}
+.user-id-bar{font-size:11px;color:var(--color-text-tertiary);padding:8px 0 0;display:flex;align-items:center;gap:6px}
+.user-id-bar code{font-family:var(--font-mono);background:var(--color-background-secondary);padding:1px 5px;border-radius:3px;border:0.5px solid var(--color-border-tertiary)}
+</style>
+</head>
+<body>
+
+<h2 class="sr-only">DSA Master Problem Sheet — 300+ problems with persistent progress tracking</h2>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="title">DSA Master Problem Sheet</div>
+    <div class="subtitle" id="sub-txt">Loading…</div>
+  </div>
+  <div id="sync-badge" class="sync-status">Loading…</div>
+</div>
+
+<div class="user-id-bar">
+  Your ID: <code id="uid-display">—</code>
+  <span style="color:var(--color-text-tertiary)">· bookmark this page to keep your progress</span>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-label">Total solved</div>
+    <div class="stat-val" id="tot">0</div>
+    <div class="progress-bar"><div class="progress-fill" id="tot-bar" style="width:0%"></div></div>
+  </div>
+  <div class="stat-card"><div class="stat-label">Easy</div><div class="stat-val" id="s-easy" style="color:#3B6D11">0</div></div>
+  <div class="stat-card"><div class="stat-label">Medium</div><div class="stat-val" id="s-med" style="color:#854F0B">0</div></div>
+  <div class="stat-card"><div class="stat-label">Hard</div><div class="stat-val" id="s-hard" style="color:#A32D2D">0</div></div>
+</div>
+
+<div class="controls">
+  <input type="text" id="q" placeholder="Search by name or LC number…" oninput="applyFilters()">
+  <select id="fd" onchange="applyFilters()">
+    <option value="">All difficulties</option>
+    <option>easy</option><option>medium</option><option>hard</option>
+  </select>
+  <select id="ft" onchange="applyFilters()">
+    <option value="">All patterns</option>
+    <option>Two Pointers</option><option>Sliding Window</option><option>Binary Search</option>
+    <option>HashMap</option><option>Prefix Sum</option><option>Stack</option><option>Monotonic Stack</option>
+    <option>Linked List</option><option>Tree</option><option>BST</option><option>BFS</option><option>DFS</option>
+    <option>Heap</option><option>Graph</option><option>Union-Find</option><option>Topological Sort</option>
+    <option>Greedy</option><option>Intervals</option><option>DP</option><option>Knapsack</option>
+    <option>Backtracking</option><option>Matrix</option><option>Trie</option><option>Bit Manipulation</option>
+    <option>Math</option><option>String</option><option>Design</option>
+  </select>
+  <button class="filter-btn on" id="unsolved-btn" onclick="toggleUnsolved()">Unsolved only</button>
+  <button class="reset-btn" onclick="resetProgress()">Reset all</button>
+</div>
+
+<div id="pc"></div>
+<div class="no-res hidden" id="no-res">No problems match your filter.</div>
+
+<script>
+// ── Problem data ──────────────────────────────────────────────────────────────
+const D=[
+{id:'p1',lbl:'Phase 1',name:'Foundations',b:'b1',f:'f1',topics:[
+{n:'Arrays & Hashing',p:[
+{lc:1,nm:'Two Sum',d:'easy',t:['HashMap']},
+{lc:217,nm:'Contains Duplicate',d:'easy',t:['HashSet']},
+{lc:242,nm:'Valid Anagram',d:'easy',t:['HashMap','String']},
+{lc:448,nm:'Find All Numbers Disappeared in Array',d:'easy',t:['Array','HashMap']},
+{lc:283,nm:'Move Zeroes',d:'easy',t:['Two Pointers','Array']},
+{lc:121,nm:'Best Time to Buy and Sell Stock',d:'easy',t:['Array','Greedy']},
+{lc:49,nm:'Group Anagrams',d:'medium',t:['HashMap','String']},
+{lc:347,nm:'Top K Frequent Elements',d:'medium',t:['HashMap','Heap']},
+{lc:238,nm:'Product of Array Except Self',d:'medium',t:['Array','Prefix Sum']},
+{lc:36,nm:'Valid Sudoku',d:'medium',t:['HashMap','Array']},
+{lc:128,nm:'Longest Consecutive Sequence',d:'medium',t:['HashSet','Array']},
+{lc:442,nm:'Find All Duplicates in Array',d:'medium',t:['Array','HashMap']},
+{lc:560,nm:'Subarray Sum Equals K',d:'medium',t:['HashMap','Prefix Sum']},
+{lc:523,nm:'Continuous Subarray Sum',d:'medium',t:['HashMap','Prefix Sum']},
+{lc:525,nm:'Contiguous Array',d:'medium',t:['HashMap','Prefix Sum']},
+{lc:974,nm:'Subarray Sums Divisible by K',d:'medium',t:['Prefix Sum','HashMap']},
+{lc:41,nm:'First Missing Positive',d:'hard',t:['Array','Cyclic Sort']},
+]},
+{n:'Prefix Sum',p:[
+{lc:303,nm:'Range Sum Query – Immutable',d:'easy',t:['Prefix Sum','Array']},
+{lc:1480,nm:'Running Sum of 1d Array',d:'easy',t:['Prefix Sum']},
+{lc:724,nm:'Find Pivot Index',d:'easy',t:['Prefix Sum']},
+{lc:304,nm:'Range Sum Query 2D – Immutable',d:'medium',t:['Prefix Sum','Matrix']},
+{lc:528,nm:'Random Pick with Weight',d:'medium',t:['Prefix Sum','Binary Search']},
+{lc:1314,nm:'Matrix Block Sum',d:'medium',t:['Prefix Sum','Matrix']},
+]},
+{n:'Two Pointers',p:[
+{lc:125,nm:'Valid Palindrome',d:'easy',t:['Two Pointers','String']},
+{lc:26,nm:'Remove Duplicates from Sorted Array',d:'easy',t:['Two Pointers']},
+{lc:977,nm:'Squares of a Sorted Array',d:'easy',t:['Two Pointers']},
+{lc:844,nm:'Backspace String Compare',d:'easy',t:['Two Pointers','Stack']},
+{lc:234,nm:'Palindrome Linked List',d:'easy',t:['Two Pointers','Linked List']},
+{lc:167,nm:'Two Sum II – Input Array Is Sorted',d:'medium',t:['Two Pointers','Binary Search']},
+{lc:15,nm:'3Sum',d:'medium',t:['Two Pointers','Array']},
+{lc:16,nm:'3Sum Closest',d:'medium',t:['Two Pointers']},
+{lc:18,nm:'4Sum',d:'medium',t:['Two Pointers']},
+{lc:11,nm:'Container With Most Water',d:'medium',t:['Two Pointers','Greedy']},
+{lc:80,nm:'Remove Duplicates from Sorted Array II',d:'medium',t:['Two Pointers']},
+{lc:42,nm:'Trapping Rain Water',d:'hard',t:['Two Pointers','Stack']},
+]},
+{n:'Sliding Window',p:[
+{lc:643,nm:'Maximum Average Subarray I',d:'easy',t:['Sliding Window']},
+{lc:3,nm:'Longest Substring Without Repeating Characters',d:'medium',t:['Sliding Window','HashMap']},
+{lc:209,nm:'Minimum Size Subarray Sum',d:'medium',t:['Sliding Window']},
+{lc:424,nm:'Longest Repeating Character Replacement',d:'medium',t:['Sliding Window','HashMap']},
+{lc:567,nm:'Permutation in String',d:'medium',t:['Sliding Window','HashMap']},
+{lc:438,nm:'Find All Anagrams in a String',d:'medium',t:['Sliding Window','HashMap']},
+{lc:1004,nm:'Max Consecutive Ones III',d:'medium',t:['Sliding Window']},
+{lc:904,nm:'Fruit Into Baskets',d:'medium',t:['Sliding Window','HashMap']},
+{lc:1248,nm:'Count Number of Nice Subarrays',d:'medium',t:['Sliding Window','Prefix Sum']},
+{lc:76,nm:'Minimum Window Substring',d:'hard',t:['Sliding Window','HashMap']},
+{lc:239,nm:'Sliding Window Maximum',d:'hard',t:['Sliding Window','Monotonic Stack']},
+{lc:30,nm:'Substring with Concatenation of All Words',d:'hard',t:['Sliding Window','HashMap']},
+]},
+{n:'Binary Search',p:[
+{lc:704,nm:'Binary Search',d:'easy',t:['Binary Search']},
+{lc:35,nm:'Search Insert Position',d:'easy',t:['Binary Search']},
+{lc:69,nm:'Sqrt(x)',d:'easy',t:['Binary Search','Math']},
+{lc:278,nm:'First Bad Version',d:'easy',t:['Binary Search']},
+{lc:74,nm:'Search a 2D Matrix',d:'medium',t:['Binary Search','Matrix']},
+{lc:240,nm:'Search a 2D Matrix II',d:'medium',t:['Binary Search','Matrix']},
+{lc:162,nm:'Find Peak Element',d:'medium',t:['Binary Search']},
+{lc:875,nm:'Koko Eating Bananas',d:'medium',t:['Binary Search']},
+{lc:153,nm:'Find Minimum in Rotated Sorted Array',d:'medium',t:['Binary Search']},
+{lc:33,nm:'Search in Rotated Sorted Array',d:'medium',t:['Binary Search']},
+{lc:81,nm:'Search in Rotated Sorted Array II',d:'medium',t:['Binary Search']},
+{lc:1011,nm:'Capacity to Ship Packages Within D Days',d:'medium',t:['Binary Search']},
+{lc:981,nm:'Time Based Key-Value Store',d:'medium',t:['Binary Search','HashMap']},
+{lc:410,nm:'Split Array Largest Sum',d:'hard',t:['Binary Search','DP']},
+{lc:4,nm:'Median of Two Sorted Arrays',d:'hard',t:['Binary Search']},
+{lc:668,nm:'Kth Smallest Number in Multiplication Table',d:'hard',t:['Binary Search']},
+]},
+]},
+{id:'p2',lbl:'Phase 2',name:'Core Data Structures',b:'b2',f:'f2',topics:[
+{n:'Stack & Monotonic Stack',p:[
+{lc:20,nm:'Valid Parentheses',d:'easy',t:['Stack']},
+{lc:1047,nm:'Remove All Adjacent Duplicates in String',d:'easy',t:['Stack']},
+{lc:496,nm:'Next Greater Element I',d:'easy',t:['Stack','Monotonic Stack']},
+{lc:155,nm:'Min Stack',d:'medium',t:['Stack','Design']},
+{lc:150,nm:'Evaluate Reverse Polish Notation',d:'medium',t:['Stack']},
+{lc:22,nm:'Generate Parentheses',d:'medium',t:['Stack','Backtracking']},
+{lc:394,nm:'Decode String',d:'medium',t:['Stack']},
+{lc:739,nm:'Daily Temperatures',d:'medium',t:['Stack','Monotonic Stack']},
+{lc:503,nm:'Next Greater Element II',d:'medium',t:['Stack','Monotonic Stack']},
+{lc:901,nm:'Online Stock Span',d:'medium',t:['Stack','Monotonic Stack']},
+{lc:853,nm:'Car Fleet',d:'medium',t:['Stack','Monotonic Stack']},
+{lc:402,nm:'Remove K Digits',d:'medium',t:['Stack','Greedy','Monotonic Stack']},
+{lc:316,nm:'Remove Duplicate Letters',d:'medium',t:['Stack','Greedy','Monotonic Stack']},
+{lc:456,nm:'132 Pattern',d:'medium',t:['Stack','Monotonic Stack']},
+{lc:84,nm:'Largest Rectangle in Histogram',d:'hard',t:['Stack','Monotonic Stack']},
+{lc:85,nm:'Maximal Rectangle',d:'hard',t:['Stack','DP','Matrix']},
+]},
+{n:'Linked List',p:[
+{lc:206,nm:'Reverse Linked List',d:'easy',t:['Linked List']},
+{lc:21,nm:'Merge Two Sorted Lists',d:'easy',t:['Linked List']},
+{lc:141,nm:'Linked List Cycle',d:'easy',t:['Linked List','Two Pointers']},
+{lc:160,nm:'Intersection of Two Linked Lists',d:'easy',t:['Linked List','Two Pointers']},
+{lc:83,nm:'Remove Duplicates from Sorted List',d:'easy',t:['Linked List']},
+{lc:143,nm:'Reorder List',d:'medium',t:['Linked List','Two Pointers']},
+{lc:19,nm:'Remove Nth Node From End of List',d:'medium',t:['Linked List','Two Pointers']},
+{lc:82,nm:'Remove Duplicates from Sorted List II',d:'medium',t:['Linked List']},
+{lc:92,nm:'Reverse Linked List II',d:'medium',t:['Linked List']},
+{lc:61,nm:'Rotate List',d:'medium',t:['Linked List']},
+{lc:86,nm:'Partition List',d:'medium',t:['Linked List']},
+{lc:138,nm:'Copy List with Random Pointer',d:'medium',t:['Linked List','HashMap']},
+{lc:2,nm:'Add Two Numbers',d:'medium',t:['Linked List','Math']},
+{lc:328,nm:'Odd Even Linked List',d:'medium',t:['Linked List']},
+{lc:148,nm:'Sort List',d:'medium',t:['Linked List','Merge Sort']},
+{lc:287,nm:'Find the Duplicate Number',d:'medium',t:['Linked List','Two Pointers']},
+{lc:146,nm:'LRU Cache',d:'medium',t:['Linked List','HashMap','Design']},
+{lc:23,nm:'Merge K Sorted Lists',d:'hard',t:['Linked List','Heap']},
+{lc:25,nm:'Reverse Nodes in K-Group',d:'hard',t:['Linked List']},
+]},
+{n:'Trees & Binary Search Trees',p:[
+{lc:226,nm:'Invert Binary Tree',d:'easy',t:['Tree','DFS']},
+{lc:104,nm:'Maximum Depth of Binary Tree',d:'easy',t:['Tree','DFS']},
+{lc:111,nm:'Minimum Depth of Binary Tree',d:'easy',t:['Tree','BFS']},
+{lc:543,nm:'Diameter of Binary Tree',d:'easy',t:['Tree','DFS']},
+{lc:110,nm:'Balanced Binary Tree',d:'easy',t:['Tree','DFS']},
+{lc:100,nm:'Same Tree',d:'easy',t:['Tree','DFS']},
+{lc:572,nm:'Subtree of Another Tree',d:'easy',t:['Tree','DFS']},
+{lc:112,nm:'Path Sum',d:'easy',t:['Tree','DFS']},
+{lc:102,nm:'Binary Tree Level Order Traversal',d:'medium',t:['Tree','BFS']},
+{lc:107,nm:'Binary Tree Level Order Traversal II',d:'medium',t:['Tree','BFS']},
+{lc:199,nm:'Binary Tree Right Side View',d:'medium',t:['Tree','BFS']},
+{lc:1448,nm:'Count Good Nodes in Binary Tree',d:'medium',t:['Tree','DFS']},
+{lc:113,nm:'Path Sum II',d:'medium',t:['Tree','DFS','Backtracking']},
+{lc:437,nm:'Path Sum III',d:'medium',t:['Tree','DFS','Prefix Sum']},
+{lc:236,nm:'Lowest Common Ancestor of Binary Tree',d:'medium',t:['Tree','DFS']},
+{lc:235,nm:'Lowest Common Ancestor of BST',d:'medium',t:['Tree','BST']},
+{lc:98,nm:'Validate Binary Search Tree',d:'medium',t:['Tree','BST','DFS']},
+{lc:230,nm:'Kth Smallest Element in a BST',d:'medium',t:['Tree','BST','DFS']},
+{lc:450,nm:'Delete Node in a BST',d:'medium',t:['Tree','BST']},
+{lc:701,nm:'Insert into a Binary Search Tree',d:'medium',t:['Tree','BST']},
+{lc:114,nm:'Flatten Binary Tree to Linked List',d:'medium',t:['Tree','DFS']},
+{lc:116,nm:'Populating Next Right Pointers in Each Node',d:'medium',t:['Tree','BFS']},
+{lc:105,nm:'Construct Binary Tree from Preorder and Inorder',d:'medium',t:['Tree','DFS']},
+{lc:106,nm:'Construct Binary Tree from Inorder and Postorder',d:'medium',t:['Tree','DFS']},
+{lc:222,nm:'Count Complete Tree Nodes',d:'medium',t:['Tree','Binary Search']},
+{lc:173,nm:'Binary Search Tree Iterator',d:'medium',t:['Tree','BST','Stack']},
+{lc:652,nm:'Find Duplicate Subtrees',d:'medium',t:['Tree','HashMap','DFS']},
+{lc:124,nm:'Binary Tree Maximum Path Sum',d:'hard',t:['Tree','DFS']},
+{lc:297,nm:'Serialize and Deserialize Binary Tree',d:'hard',t:['Tree','BFS','DFS']},
+{lc:987,nm:'Vertical Order Traversal of Binary Tree',d:'hard',t:['Tree','BFS']},
+]},
+{n:'Heap / Priority Queue',p:[
+{lc:1046,nm:'Last Stone Weight',d:'easy',t:['Heap']},
+{lc:215,nm:'Kth Largest Element in an Array',d:'medium',t:['Heap','Quick Select']},
+{lc:973,nm:'K Closest Points to Origin',d:'medium',t:['Heap']},
+{lc:692,nm:'Top K Frequent Words',d:'medium',t:['Heap','HashMap']},
+{lc:621,nm:'Task Scheduler',d:'medium',t:['Heap','Greedy']},
+{lc:767,nm:'Reorganize String',d:'medium',t:['Heap','Greedy']},
+{lc:355,nm:'Design Twitter',d:'medium',t:['Heap','Design','Linked List']},
+{lc:378,nm:'Kth Smallest Element in a Sorted Matrix',d:'medium',t:['Heap','Binary Search']},
+{lc:1642,nm:'Furthest Building You Can Reach',d:'medium',t:['Heap','Greedy']},
+{lc:502,nm:'IPO',d:'hard',t:['Heap','Greedy']},
+{lc:295,nm:'Find Median from Data Stream',d:'hard',t:['Heap','Two Heaps','Design']},
+{lc:358,nm:'Rearrange String k Distance Apart',d:'hard',t:['Heap','Greedy']},
+]},
+]},
+{id:'p3',lbl:'Phase 3',name:'Advanced Patterns',b:'b3',f:'f3',topics:[
+{n:'Matrix',p:[
+{lc:54,nm:'Spiral Matrix',d:'medium',t:['Matrix','Array']},
+{lc:59,nm:'Spiral Matrix II',d:'medium',t:['Matrix','Array']},
+{lc:48,nm:'Rotate Image',d:'medium',t:['Matrix','Array']},
+{lc:73,nm:'Set Matrix Zeroes',d:'medium',t:['Matrix','Array']},
+{lc:74,nm:'Search a 2D Matrix',d:'medium',t:['Binary Search','Matrix']},
+{lc:240,nm:'Search a 2D Matrix II',d:'medium',t:['Binary Search','Matrix']},
+{lc:79,nm:'Word Search',d:'medium',t:['Matrix','Backtracking','DFS']},
+{lc:130,nm:'Surrounded Regions',d:'medium',t:['Matrix','DFS','Union-Find']},
+{lc:417,nm:'Pacific Atlantic Water Flow',d:'medium',t:['Matrix','DFS','BFS']},
+{lc:329,nm:'Longest Increasing Path in a Matrix',d:'hard',t:['Matrix','DFS','DP']},
+]},
+{n:'Graphs',p:[
+{lc:733,nm:'Flood Fill',d:'easy',t:['Graph','DFS','BFS']},
+{lc:200,nm:'Number of Islands',d:'medium',t:['Graph','DFS','BFS','Union-Find']},
+{lc:695,nm:'Max Area of Island',d:'medium',t:['Graph','DFS']},
+{lc:133,nm:'Clone Graph',d:'medium',t:['Graph','DFS','BFS']},
+{lc:207,nm:'Course Schedule',d:'medium',t:['Graph','Topological Sort','DFS']},
+{lc:210,nm:'Course Schedule II',d:'medium',t:['Graph','Topological Sort']},
+{lc:684,nm:'Redundant Connection',d:'medium',t:['Graph','Union-Find']},
+{lc:261,nm:'Graph Valid Tree',d:'medium',t:['Graph','Union-Find','BFS']},
+{lc:323,nm:'Number of Connected Components in an Undirected Graph',d:'medium',t:['Graph','Union-Find']},
+{lc:399,nm:'Evaluate Division',d:'medium',t:['Graph','Union-Find','BFS']},
+{lc:994,nm:'Rotting Oranges',d:'medium',t:['Graph','BFS']},
+{lc:1091,nm:'Shortest Path in Binary Matrix',d:'medium',t:['Graph','BFS']},
+{lc:127,nm:'Word Ladder',d:'hard',t:['Graph','BFS']},
+{lc:815,nm:'Bus Routes',d:'hard',t:['Graph','BFS']},
+]},
+{n:'Greedy & Intervals',p:[
+{lc:252,nm:'Meeting Rooms',d:'easy',t:['Intervals','Sorting']},
+{lc:55,nm:'Jump Game',d:'medium',t:['Greedy']},
+{lc:45,nm:'Jump Game II',d:'medium',t:['Greedy']},
+{lc:134,nm:'Gas Station',d:'medium',t:['Greedy']},
+{lc:846,nm:'Hand of Straights',d:'medium',t:['Greedy','HashMap']},
+{lc:1029,nm:'Two City Scheduling',d:'medium',t:['Greedy','Sorting']},
+{lc:406,nm:'Queue Reconstruction by Height',d:'medium',t:['Greedy','Sorting']},
+{lc:763,nm:'Partition Labels',d:'medium',t:['Greedy','Two Pointers']},
+{lc:678,nm:'Valid Parenthesis String',d:'medium',t:['Greedy','Stack']},
+{lc:1899,nm:'Merge Triplets to Form Target Triplet',d:'medium',t:['Greedy']},
+{lc:57,nm:'Insert Interval',d:'medium',t:['Intervals','Array']},
+{lc:56,nm:'Merge Intervals',d:'medium',t:['Intervals','Sorting']},
+{lc:435,nm:'Non-Overlapping Intervals',d:'medium',t:['Intervals','Greedy']},
+{lc:253,nm:'Meeting Rooms II',d:'medium',t:['Intervals','Heap']},
+{lc:1851,nm:'Minimum Interval to Include Each Query',d:'hard',t:['Intervals','Heap','Binary Search']},
+{lc:135,nm:'Candy',d:'hard',t:['Greedy','Array']},
+]},
+{n:'Dynamic Programming — 1D',p:[
+{lc:70,nm:'Climbing Stairs',d:'easy',t:['DP']},
+{lc:746,nm:'Min Cost Climbing Stairs',d:'easy',t:['DP']},
+{lc:198,nm:'House Robber',d:'medium',t:['DP']},
+{lc:213,nm:'House Robber II',d:'medium',t:['DP']},
+{lc:740,nm:'Delete and Earn',d:'medium',t:['DP']},
+{lc:91,nm:'Decode Ways',d:'medium',t:['DP','String']},
+{lc:139,nm:'Word Break',d:'medium',t:['DP','Trie']},
+{lc:300,nm:'Longest Increasing Subsequence',d:'medium',t:['DP','Binary Search']},
+{lc:673,nm:'Number of Longest Increasing Subsequences',d:'medium',t:['DP']},
+{lc:368,nm:'Largest Divisible Subset',d:'medium',t:['DP']},
+{lc:377,nm:'Combination Sum IV',d:'medium',t:['DP']},
+{lc:322,nm:'Coin Change',d:'medium',t:['DP','Knapsack']},
+{lc:518,nm:'Coin Change II',d:'medium',t:['DP','Knapsack']},
+{lc:416,nm:'Partition Equal Subset Sum',d:'medium',t:['DP','Knapsack']},
+{lc:474,nm:'Ones and Zeroes',d:'medium',t:['DP','Knapsack']},
+{lc:494,nm:'Target Sum',d:'medium',t:['DP','Backtracking','Knapsack']},
+{lc:2140,nm:'Solving Questions with Brainpower',d:'medium',t:['DP']},
+{lc:1696,nm:'Jump Game VI',d:'medium',t:['DP','Monotonic Stack']},
+]},
+{n:'Dynamic Programming — 2D & Strings',p:[
+{lc:62,nm:'Unique Paths',d:'medium',t:['DP','Math']},
+{lc:63,nm:'Unique Paths II',d:'medium',t:['DP','Matrix']},
+{lc:64,nm:'Minimum Path Sum',d:'medium',t:['DP','Matrix']},
+{lc:152,nm:'Maximum Product Subarray',d:'medium',t:['DP']},
+{lc:5,nm:'Longest Palindromic Substring',d:'medium',t:['DP','Two Pointers']},
+{lc:647,nm:'Palindromic Substrings',d:'medium',t:['DP']},
+{lc:1143,nm:'Longest Common Subsequence',d:'medium',t:['DP','2D DP']},
+{lc:1035,nm:'Uncrossed Lines',d:'medium',t:['DP','2D DP']},
+{lc:583,nm:'Delete Operation for Two Strings',d:'medium',t:['DP','2D DP']},
+{lc:97,nm:'Interleaving String',d:'medium',t:['DP','2D DP']},
+{lc:309,nm:'Best Time to Buy and Sell Stock with Cooldown',d:'medium',t:['DP']},
+{lc:714,nm:'Best Time to Buy and Sell Stock with Fee',d:'medium',t:['DP','Greedy']},
+{lc:1312,nm:'Minimum Insertion Steps to Make String Palindrome',d:'hard',t:['DP','2D DP']},
+{lc:1092,nm:'Shortest Common Supersequence',d:'hard',t:['DP','2D DP']},
+{lc:72,nm:'Edit Distance',d:'hard',t:['DP','2D DP']},
+{lc:115,nm:'Distinct Subsequences',d:'hard',t:['DP','2D DP']},
+{lc:312,nm:'Burst Balloons',d:'hard',t:['DP','Interval DP']},
+{lc:174,nm:'Dungeon Game',d:'hard',t:['DP','2D DP']},
+{lc:188,nm:'Best Time to Buy and Sell Stock IV',d:'hard',t:['DP']},
+{lc:44,nm:'Wildcard Matching',d:'hard',t:['DP','2D DP']},
+{lc:10,nm:'Regular Expression Matching',d:'hard',t:['DP','2D DP']},
+]},
+{n:'Backtracking',p:[
+{lc:78,nm:'Subsets',d:'medium',t:['Backtracking']},
+{lc:90,nm:'Subsets II',d:'medium',t:['Backtracking']},
+{lc:77,nm:'Combinations',d:'medium',t:['Backtracking']},
+{lc:39,nm:'Combination Sum',d:'medium',t:['Backtracking']},
+{lc:40,nm:'Combination Sum II',d:'medium',t:['Backtracking']},
+{lc:46,nm:'Permutations',d:'medium',t:['Backtracking']},
+{lc:47,nm:'Permutations II',d:'medium',t:['Backtracking']},
+{lc:131,nm:'Palindrome Partitioning',d:'medium',t:['Backtracking','DP']},
+{lc:93,nm:'Restore IP Addresses',d:'medium',t:['Backtracking','String']},
+{lc:17,nm:'Letter Combinations of a Phone Number',d:'medium',t:['Backtracking']},
+{lc:491,nm:'Non-decreasing Subsequences',d:'medium',t:['Backtracking','HashSet']},
+{lc:526,nm:'Beautiful Arrangement',d:'medium',t:['Backtracking']},
+{lc:37,nm:'Sudoku Solver',d:'hard',t:['Backtracking']},
+{lc:51,nm:'N-Queens',d:'hard',t:['Backtracking']},
+{lc:52,nm:'N-Queens II',d:'hard',t:['Backtracking']},
+]},
+]},
+{id:'p4',lbl:'Phase 4',name:'Elite Level',b:'b4',f:'f4',topics:[
+{n:'Trie',p:[
+{lc:208,nm:'Implement Trie (Prefix Tree)',d:'medium',t:['Trie','Design']},
+{lc:211,nm:'Design Add and Search Words Data Structure',d:'medium',t:['Trie','Backtracking']},
+{lc:648,nm:'Replace Words',d:'medium',t:['Trie','HashMap']},
+{lc:677,nm:'Map Sum Pairs',d:'medium',t:['Trie','Design']},
+{lc:1268,nm:'Search Suggestions System',d:'medium',t:['Trie','Binary Search']},
+{lc:212,nm:'Word Search II',d:'hard',t:['Trie','Backtracking']},
+{lc:336,nm:'Palindrome Pairs',d:'hard',t:['Trie','HashMap']},
+]},
+{n:'Bit Manipulation',p:[
+{lc:136,nm:'Single Number',d:'easy',t:['Bit Manipulation']},
+{lc:191,nm:'Number of 1 Bits',d:'easy',t:['Bit Manipulation']},
+{lc:338,nm:'Counting Bits',d:'easy',t:['Bit Manipulation','DP']},
+{lc:190,nm:'Reverse Bits',d:'easy',t:['Bit Manipulation']},
+{lc:268,nm:'Missing Number',d:'easy',t:['Bit Manipulation','Math']},
+{lc:67,nm:'Add Binary',d:'easy',t:['Bit Manipulation','String']},
+{lc:371,nm:'Sum of Two Integers',d:'medium',t:['Bit Manipulation']},
+{lc:201,nm:'Bitwise AND of Numbers Range',d:'medium',t:['Bit Manipulation']},
+{lc:137,nm:'Single Number II',d:'medium',t:['Bit Manipulation']},
+{lc:260,nm:'Single Number III',d:'medium',t:['Bit Manipulation']},
+{lc:318,nm:'Maximum Product of Word Lengths',d:'medium',t:['Bit Manipulation']},
+]},
+{n:'Math & Number Theory',p:[
+{lc:9,nm:'Palindrome Number',d:'easy',t:['Math']},
+{lc:66,nm:'Plus One',d:'easy',t:['Math','Array']},
+{lc:202,nm:'Happy Number',d:'easy',t:['Math','Two Pointers']},
+{lc:263,nm:'Ugly Number',d:'easy',t:['Math']},
+{lc:326,nm:'Power of Three',d:'easy',t:['Math']},
+{lc:7,nm:'Reverse Integer',d:'medium',t:['Math']},
+{lc:50,nm:'Pow(x, n)',d:'medium',t:['Math','Binary Search']},
+{lc:43,nm:'Multiply Strings',d:'medium',t:['Math','String']},
+{lc:204,nm:'Count Primes',d:'medium',t:['Math','Sieve']},
+{lc:264,nm:'Ugly Number II',d:'medium',t:['Math','Heap','DP']},
+{lc:166,nm:'Fraction to Recurring Decimal',d:'medium',t:['Math','HashMap']},
+]},
+{n:'String Algorithms',p:[
+{lc:14,nm:'Longest Common Prefix',d:'easy',t:['String']},
+{lc:28,nm:'Find the Index of the First Occurrence in a String',d:'easy',t:['String']},
+{lc:459,nm:'Repeated Substring Pattern',d:'easy',t:['String']},
+{lc:151,nm:'Reverse Words in a String',d:'medium',t:['String','Two Pointers']},
+{lc:8,nm:'String to Integer (atoi)',d:'medium',t:['String']},
+{lc:165,nm:'Compare Version Numbers',d:'medium',t:['String']},
+{lc:395,nm:'Longest Substring with At Least K Repeating Characters',d:'medium',t:['String','Divide & Conquer']},
+{lc:443,nm:'String Compression',d:'medium',t:['String','Two Pointers']},
+{lc:6,nm:'Zigzag Conversion',d:'medium',t:['String']},
+{lc:32,nm:'Longest Valid Parentheses',d:'hard',t:['String','Stack','DP']},
+{lc:68,nm:'Text Justification',d:'hard',t:['String']},
+]},
+{n:'Design Problems',p:[
+{lc:380,nm:'Insert Delete GetRandom O(1)',d:'medium',t:['Design','HashMap','Array']},
+{lc:1396,nm:'Design Underground System',d:'medium',t:['Design','HashMap']},
+{lc:1472,nm:'Design Browser History',d:'medium',t:['Design','Linked List']},
+{lc:155,nm:'Min Stack',d:'medium',t:['Design','Stack']},
+{lc:295,nm:'Find Median from Data Stream',d:'hard',t:['Design','Heap']},
+{lc:460,nm:'LFU Cache',d:'hard',t:['Design','Linked List','HashMap']},
+{lc:432,nm:"All O'one Data Structure",d:'hard',t:['Design','Linked List','HashMap']},
+]},
+{n:'Advanced Graph & Hard DP',p:[
+{lc:1857,nm:'Largest Color Value in a Directed Graph',d:'hard',t:['Graph','Topological Sort','DP']},
+{lc:1697,nm:'Checking Existence of Edge Length Limited Paths',d:'hard',t:['Graph','Union-Find','Binary Search']},
+{lc:1203,nm:'Sort Items by Groups Respecting Dependencies',d:'hard',t:['Graph','Topological Sort']},
+{lc:887,nm:'Super Egg Drop',d:'hard',t:['DP','Binary Search']},
+{lc:354,nm:'Russian Doll Envelopes',d:'hard',t:['DP','Binary Search']},
+{lc:546,nm:'Remove Boxes',d:'hard',t:['DP','Interval DP']},
+{lc:514,nm:'Freedom Trail',d:'hard',t:['DP','Graph','BFS']},
+{lc:1000,nm:'Minimum Cost to Merge Stones',d:'hard',t:['DP','Interval DP']},
+{lc:1425,nm:'Constrained Subsequence Sum',d:'hard',t:['DP','Monotonic Stack']},
+]},
+]},
+];
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let solved = {};       // { lc1: "easy", ... }
+let userId = null;
+let unOnly = true;
+let saveTimer = null;
+
+// ── User ID persistence ───────────────────────────────────────────────────────
+function loadUserId() {
+  return localStorage.getItem('dsa_user_id') || null;
+}
+function saveUserId(id) {
+  localStorage.setItem('dsa_user_id', id);
+}
+
+// ── Sync badge ────────────────────────────────────────────────────────────────
+function setSyncStatus(state, text) {
+  const b = document.getElementById('sync-badge');
+  b.className = 'sync-status ' + state;
+  b.textContent = text;
+}
+
+// ── API helpers ───────────────────────────────────────────────────────────────
+async function apiGet(path) {
+  const headers = userId ? { 'x-user-id': userId } : {};
+  const res = await fetch(path, { headers });
+  const uid = res.headers.get('x-user-id');
+  if (uid) { userId = uid; saveUserId(uid); }
+  return res.json();
+}
+
+async function apiPost(path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (userId) headers['x-user-id'] = userId;
+  const res = await fetch(path, { method: 'POST', headers, body: JSON.stringify(body) });
+  const uid = res.headers.get('x-user-id');
+  if (uid) { userId = uid; saveUserId(uid); }
+  return res.json();
+}
+
+async function apiDelete(path) {
+  const headers = userId ? { 'x-user-id': userId } : {};
+  const res = await fetch(path, { method: 'DELETE', headers });
+  return res.json();
+}
+
+// ── Load progress from server ─────────────────────────────────────────────────
+async function loadProgress() {
+  setSyncStatus('syncing', '⟳ Loading…');
+  try {
+    userId = loadUserId(); // pre-load so first request carries it
+    const data = await apiGet('/api/progress');
+    solved = data.solved || {};
+    document.getElementById('uid-display').textContent = userId || '—';
+    setSyncStatus('saved', '✓ Synced');
+  } catch (e) {
+    console.error(e);
+    setSyncStatus('error', '✗ Offline — using local');
+    solved = JSON.parse(localStorage.getItem('dsa_solved') || '{}');
+  }
+}
+
+// ── Save a single problem change ──────────────────────────────────────────────
+async function saveMark(lcNum, diff, isSolved) {
+  setSyncStatus('syncing', '⟳ Saving…');
+  try {
+    await apiPost('/api/progress', { lcNum, diff, solved: isSolved });
+    setSyncStatus('saved', '✓ Saved');
+    // Also keep localStorage as offline fallback
+    localStorage.setItem('dsa_solved', JSON.stringify(solved));
+  } catch (e) {
+    setSyncStatus('error', '✗ Save failed');
+  }
+}
+
+// ── Problem helpers ────────────────────────────────────────────────────────────
+function allProbs() { return D.flatMap(ph => ph.topics.flatMap(t => t.p)); }
+
+// ── Build DOM ──────────────────────────────────────────────────────────────────
+function build() {
+  const total = allProbs().length;
+  document.getElementById('sub-txt').textContent =
+    `${total} problems · 4 phases · every major interview pattern`;
+  const pc = document.getElementById('pc');
+  D.forEach(ph => {
+    const pt = ph.topics.reduce((a, t) => a + t.p.length, 0);
+    const div = document.createElement('div');
+    div.className = 'phase'; div.dataset.phase = ph.id;
+    div.innerHTML = `<div class="phase-hdr" onclick="togglePhase('${ph.id}')">
+<div class="phase-title"><span class="phase-badge ${ph.b}">${ph.lbl}</span>${ph.name}</div>
+<div class="phase-meta"><span class="phase-prog" id="pp-${ph.id}">0 / ${pt}</span>
+<button class="toggle-btn" id="ph-btn-${ph.id}" onclick="event.stopPropagation();togglePhase('${ph.id}')"><i class="chevron" id="ph-chev-${ph.id}">▾</i> Collapse</button>
+</div></div><div class="pbar"><div class="pbar-fill ${ph.f}" id="pb-${ph.id}" style="width:0%"></div></div>`;
+    ph.topics.forEach(top => {
+      const tid = ph.id + '_' + top.n.replace(/\W+/g, '_');
+      const td = document.createElement('div');
+      td.className = 'topic';
+      td.innerHTML = `<div class="topic-hdr" onclick="toggleTopic('${tid}')"><span class="topic-name">${top.n}</span><div style="display:flex;align-items:center;gap:8px"><span class="topic-cnt" id="tc-${tid}">${top.p.length} problems</span><button class="toggle-btn" id="tp-btn-${tid}" onclick="event.stopPropagation();toggleTopic('${tid}')"><i class="chevron" id="tp-chev-${tid}">▾</i> Collapse</button></div></div>`;
+      top.p.forEach(p => {
+        const pid = 'lc' + p.lc;
+        const row = document.createElement('div');
+        row.className = 'prob-row';
+        row.dataset.diff = p.d; row.dataset.tags = p.t.join(',').toLowerCase();
+        row.dataset.nm = p.nm.toLowerCase() + ' ' + p.lc; row.dataset.pid = pid;
+        const lcSlug = p.nm.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        row.innerHTML = `<input type="checkbox" id="${pid}" onchange="mark(${p.lc},'${p.d}',this.checked)">
+<span class="prob-num">${p.lc}</span>
+<a class="prob-name" href="https://leetcode.com/problems/${lcSlug}/" target="_blank">${p.nm}</a>
+<span class="diff ${p.d}">${p.d}</span>
+<div class="tags">${p.t.map(x => `<span class="tag">${x}</span>`).join('')}</div>`;
+        td.appendChild(row);
+      });
+      div.appendChild(td);
+    });
+    pc.appendChild(div);
+  });
+}
+
+// ── Restore checkbox states from solved map ───────────────────────────────────
+function restoreCheckboxes() {
+  Object.entries(solved).forEach(([pid, d]) => {
+    if (d) {
+      const cb = document.getElementById(pid);
+      if (cb) {
+        cb.checked = true;
+        const row = cb.closest('.prob-row');
+        if (row) row.classList.add('done');
+      }
+    }
+  });
+}
+
+// ── Mark / unmark ─────────────────────────────────────────────────────────────
+function mark(lcNum, diff, checked) {
+  const pid = 'lc' + lcNum;
+  solved[pid] = checked ? diff : null;
+  const row = document.querySelector(`[data-pid="${pid}"]`);
+  if (row) row.classList.toggle('done', checked);
+  updateStats();
+  applyFilters();
+  saveMark(lcNum, diff, checked);
+}
+
+// ── Stats ──────────────────────────────────────────────────────────────────────
+function updateStats() {
+  const c = { easy: 0, medium: 0, hard: 0 }; let tot = 0;
+  Object.values(solved).forEach(d => { if (d) { c[d]++; tot++; } });
+  const all = allProbs().length;
+  document.getElementById('tot').textContent = tot + ' / ' + all;
+  document.getElementById('s-easy').textContent = c.easy;
+  document.getElementById('s-med').textContent = c.medium;
+  document.getElementById('s-hard').textContent = c.hard;
+  document.getElementById('tot-bar').style.width = Math.round(tot / all * 100) + '%';
+  D.forEach(ph => {
+    let pt = 0, ps = 0;
+    ph.topics.forEach(t => t.p.forEach(p => { pt++; if (solved['lc' + p.lc]) ps++; }));
+    document.getElementById('pp-' + ph.id).textContent = ps + ' / ' + pt;
+    document.getElementById('pb-' + ph.id).style.width = Math.round(ps / pt * 100) + '%';
+  });
+}
+
+// ── Filters ────────────────────────────────────────────────────────────────────
+function applyFilters() {
+  const q  = document.getElementById('q').value.toLowerCase();
+  const fd = document.getElementById('fd').value;
+  const ft = document.getElementById('ft').value.toLowerCase();
+  let any = false;
+  document.querySelectorAll('.prob-row').forEach(r => {
+    const mq = !q  || r.dataset.nm.includes(q);
+    const md = !fd || r.dataset.diff === fd;
+    const mt = !ft || r.dataset.tags.includes(ft);
+    const mu = !unOnly || !solved[r.dataset.pid];
+    const show = mq && md && mt && mu;
+    r.style.display = show ? '' : 'none';
+    if (show) any = true;
+  });
+  document.getElementById('no-res').classList.toggle('hidden', any);
+}
+
+function toggleUnsolved() {
+  unOnly = !unOnly;
+  document.getElementById('unsolved-btn').classList.toggle('on', unOnly);
+  applyFilters();
+}
+
+// ── Collapse / expand ─────────────────────────────────────────────────────────
+function togglePhase(id) {
+  const el = document.querySelector(`[data-phase="${id}"]`);
+  const collapsed = el.classList.toggle('collapsed');
+  const chev = document.getElementById('ph-chev-' + id);
+  const btn  = document.getElementById('ph-btn-' + id);
+  chev.style.transform = collapsed ? 'rotate(-90deg)' : '';
+  btn.childNodes[1].textContent = collapsed ? ' Expand' : ' Collapse';
+}
+function toggleTopic(tid) {
+  const el = document.getElementById('tp-btn-' + tid).closest('.topic');
+  const collapsed = el.classList.toggle('collapsed');
+  const chev = document.getElementById('tp-chev-' + tid);
+  const btn  = document.getElementById('tp-btn-' + tid);
+  chev.style.transform = collapsed ? 'rotate(-90deg)' : '';
+  btn.childNodes[1].textContent = collapsed ? ' Expand' : ' Collapse';
+}
+
+// ── Reset ──────────────────────────────────────────────────────────────────────
+async function resetProgress() {
+  if (!confirm('Reset ALL your progress? This cannot be undone.')) return;
+  setSyncStatus('syncing', '⟳ Resetting…');
+  try {
+    await apiDelete('/api/progress');
+    solved = {};
+    localStorage.removeItem('dsa_solved');
+    document.querySelectorAll('.prob-row input[type=checkbox]').forEach(cb => { cb.checked = false; });
+    document.querySelectorAll('.prob-row').forEach(r => r.classList.remove('done'));
+    updateStats(); applyFilters();
+    setSyncStatus('saved', '✓ Reset done');
+  } catch (e) {
+    setSyncStatus('error', '✗ Reset failed');
+  }
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+(async () => {
+  build();
+  await loadProgress();
+  document.getElementById('uid-display').textContent = userId || '—';
+  restoreCheckboxes();
+  updateStats();
+  applyFilters();
+})();
+</script>
+</body>
+</html>

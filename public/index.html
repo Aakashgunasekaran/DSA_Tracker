@@ -90,7 +90,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <div class="user-id-bar">
   Your ID: <code id="uid-display">—</code>
-  <span style="color:var(--color-text-tertiary)">· bookmark this page to keep your progress</span>
+  <span style="color:var(--color-text-tertiary)">· permanent — works in any browser on this server</span>
 </div>
 
 <div class="stats-row">
@@ -473,18 +473,14 @@ const D=[
 ];
 
 // ── State ──────────────────────────────────────────────────────────────────────
-let solved = {};       // { lc1: "easy", ... }
-let userId = null;
-let unOnly = true;
-let saveTimer = null;
+let solved = {};
 
-// ── User ID persistence ───────────────────────────────────────────────────────
-function loadUserId() {
-  return localStorage.getItem('dsa_user_id') || null;
-}
-function saveUserId(id) {
-  localStorage.setItem('dsa_user_id', id);
-}
+// ── YOUR PERMANENT USER ID — change this to any string you like ───────────────
+// This is burned into the file. Same ID in every browser, device, incognito tab.
+const MY_USER_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+let userId = MY_USER_ID;
+
+let unOnly = true;
 
 // ── Sync badge ────────────────────────────────────────────────────────────────
 function setSyncStatus(state, text) {
@@ -495,25 +491,21 @@ function setSyncStatus(state, text) {
 
 // ── API helpers ───────────────────────────────────────────────────────────────
 async function apiGet(path) {
-  const headers = userId ? { 'x-user-id': userId } : {};
-  const res = await fetch(path, { headers });
-  const uid = res.headers.get('x-user-id');
-  if (uid) { userId = uid; saveUserId(uid); }
+  const res = await fetch(path, { headers: { 'x-user-id': MY_USER_ID } });
   return res.json();
 }
 
 async function apiPost(path, body) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (userId) headers['x-user-id'] = userId;
-  const res = await fetch(path, { method: 'POST', headers, body: JSON.stringify(body) });
-  const uid = res.headers.get('x-user-id');
-  if (uid) { userId = uid; saveUserId(uid); }
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-user-id': MY_USER_ID },
+    body: JSON.stringify(body)
+  });
   return res.json();
 }
 
 async function apiDelete(path) {
-  const headers = userId ? { 'x-user-id': userId } : {};
-  const res = await fetch(path, { method: 'DELETE', headers });
+  const res = await fetch(path, { method: 'DELETE', headers: { 'x-user-id': MY_USER_ID } });
   return res.json();
 }
 
@@ -521,15 +513,13 @@ async function apiDelete(path) {
 async function loadProgress() {
   setSyncStatus('syncing', '⟳ Loading…');
   try {
-    userId = loadUserId(); // pre-load so first request carries it
     const data = await apiGet('/api/progress');
     solved = data.solved || {};
-    document.getElementById('uid-display').textContent = userId || '—';
     setSyncStatus('saved', '✓ Synced');
   } catch (e) {
     console.error(e);
-    setSyncStatus('error', '✗ Offline — using local');
-    solved = JSON.parse(localStorage.getItem('dsa_solved') || '{}');
+    setSyncStatus('error', '✗ Offline — progress not loaded');
+    solved = {};
   }
 }
 
@@ -539,8 +529,6 @@ async function saveMark(lcNum, diff, isSolved) {
   try {
     await apiPost('/api/progress', { lcNum, diff, solved: isSolved });
     setSyncStatus('saved', '✓ Saved');
-    // Also keep localStorage as offline fallback
-    localStorage.setItem('dsa_solved', JSON.stringify(solved));
   } catch (e) {
     setSyncStatus('error', '✗ Save failed');
   }
@@ -594,11 +582,7 @@ function restoreCheckboxes() {
   Object.entries(solved).forEach(([pid, d]) => {
     if (d) {
       const cb = document.getElementById(pid);
-      if (cb) {
-        cb.checked = true;
-        const row = cb.closest('.prob-row');
-        if (row) row.classList.add('done');
-      }
+      if (cb) { cb.checked = true; cb.closest('.prob-row').classList.add('done'); }
     }
   });
 }
@@ -681,7 +665,6 @@ async function resetProgress() {
   try {
     await apiDelete('/api/progress');
     solved = {};
-    localStorage.removeItem('dsa_solved');
     document.querySelectorAll('.prob-row input[type=checkbox]').forEach(cb => { cb.checked = false; });
     document.querySelectorAll('.prob-row').forEach(r => r.classList.remove('done'));
     updateStats(); applyFilters();
@@ -694,8 +677,8 @@ async function resetProgress() {
 // ── Init ───────────────────────────────────────────────────────────────────────
 (async () => {
   build();
+  document.getElementById('uid-display').textContent = MY_USER_ID;
   await loadProgress();
-  document.getElementById('uid-display').textContent = userId || '—';
   restoreCheckboxes();
   updateStats();
   applyFilters();
